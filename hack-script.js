@@ -27,13 +27,6 @@ export async function main(ns) {
         }
     }
 
-    if (ns.args[1].length < 1) {  // Make sure a parameter was passed to the script.
-        server = ns.getHostname();
-        if (server == "home") {
-            ns.tprint("ERROR: Cannot run on host server")
-            ns.exit();
-        }
-    }
     let server = ns.args[0];  // This gets the first parameter that was passed to the script.
     try {  // This tries to run the following code.
         ns.getServerSecurityLevel(server);  // Running this here lets us tests to see if the server name is valid.
@@ -49,8 +42,13 @@ export async function main(ns) {
 
     // Exec script functionsyntax
     //ns.exec("SCRIPT.js", "EXEC TARGET", THREADS, "ARG1");
-    ns.print("--------------Nuking---------------");
-    ns.exec("nuke.js", "home", 1, server);
+    ns.print(d + "NUKING" + d);
+    try {
+        ns.exec("actions/nuke.js", "home", 1, server);
+    } catch (err) {
+        ns.tprint(`ERROR: Failed to start nuke.js`);
+        ns.exit();
+    }
 
     // Infinite loops that continously hacks/grows/weakens the target server the extra weakens maintain low security
     let threads = ns.args[1];  
@@ -66,13 +64,38 @@ export async function main(ns) {
         }
     }
     while (true) {
-      ns.tprint(d + "HACKING" + d);
-      await runAndWait("action/hack.js", hackthreads, server);
-      ns.tprint(d + "WEAKENING" + d);
-      await runAndWait("action/weaken.js", weakthreads, server);
-      ns.tprint(d + "GROWING" + d);
-      await runAndWait("action/grow.js", growthreads, server);
-      ns.tprint(d + "WEAKENING" + d);
-      await runAndWait("action/weaken.js", weakthreads, server);
+        ns.print(d + "CALCULATING THREADS" + d);
+        const { hackthreads, growthreads, weakthreads } = await hackMath(ns,server);
+        ns.print("HACKTHREADS: " + hackthreads);
+        ns.print("GROWTHREADS: " + growthreads);
+        ns.print("WEAKTHREADS: " + weakthreads);
+        try {
+            ns.print(d + "HACKING" + d);
+            await runAndWait("actions/hack.js", hackthreads, server);
+        } catch (err) {
+            ns.tprint(`ERROR: Failed to start hack.js`);
+            ns.exit();
+        }
+        try {
+            ns.print(d + "WEAKENING" + d);
+            await runAndWait("actions/weaken.js", weakthreads, server);
+        } catch (err) {
+            ns.tprint(`ERROR: Failed to start weaken.js`);
+            ns.exit();
+        }
+        try {
+            ns.print(d + "GROWING" + d);
+            await runAndWait("actions/grow.js", growthreads, server);
+        } catch (err) {
+            ns.tprint(`ERROR: Failed to start grow.js`);            
+            ns.exit();
+        }
+        try {
+            ns.print(d + "WEAKENING" + d);
+            await runAndWait("actions/weaken.js", weakthreads, server);
+        } catch (err) {
+            ns.tprint(`ERROR: Failed to start weaken.js`);
+            ns.exit();
+        }
     }
 }

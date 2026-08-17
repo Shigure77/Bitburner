@@ -21,6 +21,7 @@ export async function main(ns) {
     let weakthreads = Math.ceil(ns.hackAnalyzeSecurity(hackthreads, server) / ns.weakenAnalyze(1))
     ns.tprint("Weak threads: " + weakthreads);
 
-  }
+    return { hackthreads, hackedmoney, growthreads, weakthreads };
+}
   
  

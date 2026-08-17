@@ -1,7 +1,9 @@
 /** @param {NS} ns */
 export async function main(ns) {
+    var d = "--------------";
     let server = ns.args[0];
     const moneyThresh = ns.getServerMaxMoney(server);
+    ns.print(d + "GROWING" + d);
     while (ns.getServerMoneyAvailable(server) < moneyThresh) {
         // If the server's money is less than our threshold, grow it
         try {
