@@ -1,44 +1,43 @@
 /** @param {NS} ns */
 export async function main(ns) {
+
+    const exe = ["ssh", "sql", "ftp", "smtp", "http"];
+    const exelist = {ssh:"BruteSSH.exe", sql:"SQLInject.exe", ftp:"FTPCrack.exe", smtp:"relaySMTP.exe", http:"HTTPWorm.exe"};
+    const portopen = {ssh:"sshPortOpen", sql:"sqlPortOpen", ftp:"ftpPortOpen", smtp:"smtpPortOpen", http:"httpPortOpen"};
+    const portfunction = {ssh:ns.brutessh, sql:ns.sqlinject, ftp:ns.ftpcrack, smtp:ns.relaysmtp, http:ns.httpworm};
+
     var d = "--------------";
 
     let server = ns.args[0];  // This gets the first parameter that was passed to the script.
     ns.print(d + "CHECKING PORTS" + d);
-    const s = await ns.getServer(server);
+    const s = ns.getServer(server);
+    const closed = [];
+    
+    ns.print(d + "CHECKING PORTS" + d);
 
+    // check closed ports and add to array
+    for (const key of Object.keys(portopen)) {
+        if (s[portopen[key]] === false) {
+            closed.push(key);
+        }
+    }
 
+    //open ports if any are closed
     ns.print(d + "OPENING PORTS" + d);
-    if (ns.fileExists("BruteSSH.exe", "home") && s.sshPortOpen == false) {
-        ns.print(d + "BRUTESSH" + d);
-        ns.brutessh(server);
-    } else if (s.sshPortOpen == true) {
-        ns.print("==>ssh open continuing...");
+    if (closed.length > 0) {
+        return;
+    } else {
+        for (const key of closed) {
+            if (ns.fileExists(exelist[key], "home")) {
+                ns.print(d + key.toUpperCase() + d);
+                portfunction[key](server);
+                ns.print(d + "PORT OPENED" + d);
+            } else {
+                ns.print("===> PORT OPEN SKIPPING" + portopen[key] + ".......");
+            }
+        }
     }
-    if (ns.fileExists("SQLInject.exe", "home") && s.sqlPortOpen == false) {
-        ns.print(d + "SQLINJECT" + d);
-        ns.sqlinject(server);
-    } else if (s.sqlPortOpen == true) {
-        ns.print("==>sql open continuing...");
-    }
-    if (ns.fileExists("FTPCrack.exe", "home") && s.ftpPortOpen == false) {
-        ns.print(d + "FTPCRACK" + d);
-        ns.ftpcrack(server);
-    } else if (s.ftpPortOpen == true) {
-        ns.print("==>ftp open continuing...");
-    }
-    if (ns.fileExists("relaySMTP.exe", "home") && s.smtpPortOpen == false) {
-        ns.print(d + "RELAYSMTP" + d);
-        ns.relaysmtp(server);
-    } else if (s.smtpPortOpen == true) {
-        ns.print("==>smtp open continuing...");
-    }
-    if (ns.fileExists("HTTPWorm.exe", "home") && s.httpPortOpen == false) {
-        ns.print(d + "HTTPWORM" + d);
-        ns.httpworm(server);
-    } else if (s.httpPortOpen == true) {
-        ns.print("==>http open continuing...");
-    }
-
+    
     if (s.hasAdminRights == false) {
         try {
             ns.nuke(server);
@@ -47,4 +46,4 @@ export async function main(ns) {
             ns.exit();
         }
     }
-}
+}   

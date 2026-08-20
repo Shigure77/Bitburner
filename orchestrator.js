@@ -14,10 +14,11 @@ export function autocomplete(data, args) {
 import { main as hackMath } from "./hack-math.js";
 import { main as serverPrep } from "./server-prep.js";
 
-
-const script = {hack:"actions/hack.js", weaken:"actions/weaken.js", grow:"actions/grow.js", nuke:"actions/nuke.js"};
-
-
+const type = ["hack", "weaken1", "grow", "weaken2"];
+const script = {hack:"actions/hack.js", weaken1:"actions/weaken.js", grow:"actions/grow.js", weaken2:"actions/weaken.js"};
+const { hackthreads, growthreads, weakthreads } = await hackMath(ns,server);
+const threadtype = {hack:hackthreads, weaken1:weakthreads, grow:growthreads, weaken2:weakthreads};
+const nuke = "actions/nuke.js";
 
 var d = "--------------";
 
@@ -44,16 +45,17 @@ export async function main(ns) {
     const moneyThresh = ns.getServerMaxMoney(server);
     const securityThresh = ns.getServerMinSecurityLevel(server);
 
-    const { hackthreads, growthreads, weakthreads } = await hackMath(ns,server);
 
     // Exec script functionsyntax
     //ns.exec("SCRIPT.js", "EXEC TARGET", THREADS, "ARG1");
-    ns.print(d + "NUKING" + d);
-    try {
-        ns.exec(script.nuke, "home", 1, server);
-    } catch (err) {
-        ns.tprint(`ERROR: Failed to start nuke.js`);
-        ns.exit();
+    if (!ns.hasRootAccess(server)) {
+        ns.print(d + "NUKING" + d);
+        try {
+            ns.exec(nuke, "home", 1, server);
+        } catch (err) {
+            ns.tprint(`ERROR: Failed to start nuke.js`);
+            ns.exit();
+        }
     }
 
     if (ns.fileExists("Formulas.exe", "home")) {
@@ -61,7 +63,20 @@ export async function main(ns) {
 
     }
 
-    // Infinite loops that continously hacks/grows/weakens the target server the extra weakens maintain low security
+    while (ns.getServerMoneyAvailable(server) < moneyThresh && ns.getServerSecurityLevel(server) > securityThresh) {
+        for (let t of type) {
+            if (t === "hack" || t === "weaken2") continue;
+            try {
+                ns.print(d + t + d);
+                await runAndWait(script[t], threadtype[t], server);
+            } catch (err) {
+                ns.tprint(`ERROR: Failed to start` + t + ".js");
+                ns.exit();
+            }
+        }
+    }
+
+    // Function to run a script and wait for it to complete
     let threads = ns.args[1];  
     async function runAndWait(script, threads, ...args) {
         const pid = ns.exec(script, "home", threads, ...args);
@@ -75,47 +90,23 @@ export async function main(ns) {
         while (ns.isRunning(pid)) {
           await ns.sleep(100);
         }
-        timeElapsed = Date.now() - startTime;
+        let timeElapsed = Date.now() - startTime;
         ns.print("----- DONE --- TIME ELAPSED: " + timeElapsed + "ms -----");
     }
 
-
-
-
-
+    // Infinite loops that continously hacks/grows/weakens the target server the extra weakens maintain low security
     while (true) {
         ns.print(d + "CALCULATING THREADS" + d);
         const { hackthreads, growthreads, weakthreads } = await hackMath(ns,server);
-        ns.print("HACKTHREADS: " + hackthreads);
-        ns.print("GROWTHREADS: " + growthreads);
-        ns.print("WEAKTHREADS: " + weakthreads);
-        try {
-            ns.print(d + "HACKING" + d);
-            await runAndWait(script.hack, hackthreads, server);
-        } catch (err) {
-            ns.tprint(`ERROR: Failed to start hack.js`);
-            ns.exit();
-        }
-        try {
-            ns.print(d + "WEAKENING" + d);
-            await runAndWait(script.weaken, weakthreads, server);
-        } catch (err) {
-            ns.tprint(`ERROR: Failed to start weaken.js`);
-            ns.exit();
-        }
-        try {
-            ns.print(d + "GROWING" + d);
-            await runAndWait(script.grow, growthreads, server);
-        } catch (err) {
-            ns.tprint(`ERROR: Failed to start grow.js`);            
-            ns.exit();
-        }
-        try {
-            ns.print(d + "WEAKENING" + d);
-            await runAndWait(script.weaken, weakthreads, server);
-        } catch (err) {
-            ns.tprint(`ERROR: Failed to start weaken.js`);
-            ns.exit();
+        for (let t of type) {
+            try {
+                ns.print(d + t + d);
+                await runAndWait(script[t], threadtype[t], server);
+            } catch (err) {
+                ns.tprint(`ERROR: Failed to start` + t + ".js");
+                ns.exit();
+            }
+
         }
     }
 }
