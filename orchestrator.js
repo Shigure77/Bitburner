@@ -26,15 +26,16 @@ var d = "--------------";
 
 export async function main(ns) {
     /* Main code */
+    const server = ns.args[0];  // This gets the first parameter that was passed to the script.
     if (ns.args[0].length < 1) {  // Make sure a parameter was passed to the script.
-        server = ns.getHostname();
-        if (server == "home") {
-            ns.tprint("ERROR: Cannot run on host server")
-            ns.exit();
-        }
+        ns.tprint("ERROR: No server name provided");
+        ns.exit();
+    }
+    if (server === "home") {
+        ns.tprint("ERROR: Cannot run on host server")
+        ns.exit();
     }
 
-    let server = ns.args[0];  // This gets the first parameter that was passed to the script.
     try {  // This tries to run the following code.
         ns.getServerSecurityLevel(server);  // Running this here lets us tests to see if the server name is valid.
     } catch (err) {  // The code goes here only if .getServerSecurityLevel() throws an error.
@@ -51,7 +52,7 @@ export async function main(ns) {
     if (!ns.hasRootAccess(server)) {
         ns.print(d + "NUKING" + d);
         try {
-            ns.exec(nuke, "home", 1, server);
+            await runAndWait(nuke, 1, server);
         } catch (err) {
             ns.tprint(`ERROR: Failed to start nuke.js`);
             ns.exit();
@@ -63,7 +64,7 @@ export async function main(ns) {
 
     }
 
-    while (ns.getServerMoneyAvailable(server) < moneyThresh && ns.getServerSecurityLevel(server) > securityThresh) {
+    while (ns.getServerMoneyAvailable(server) < moneyThresh || ns.getServerSecurityLevel(server) > securityThresh) {
         for (let t of type) {
             if (t === "hack" || t === "weaken2") continue;
             try {

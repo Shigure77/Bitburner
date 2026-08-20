@@ -25,7 +25,7 @@ export async function main(ns) {
     //open ports if any are closed
     ns.print(d + "OPENING PORTS" + d);
     if (closed.length > 0) {
-        return;
+        continue;
     } else {
         for (const key of closed) {
             if (ns.fileExists(exelist[key], "home")) {
