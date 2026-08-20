@@ -37,8 +37,9 @@ export async function main(ns) {
             }
         }
     }
+
     
-    if (s.hasAdminRights == false) {
+    if (s.hasRootAccess(server) == false) {
         try {
             ns.nuke(server);
         } catch (err) {

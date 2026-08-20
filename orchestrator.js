@@ -58,12 +58,12 @@ export async function main(ns) {
             ns.exit();
         }
     }
-
+    // math stage using Formulas.exe
     if (ns.fileExists("Formulas.exe", "home")) {
 
-
     }
-
+    
+    // server prep stage
     while (ns.getServerMoneyAvailable(server) < moneyThresh || ns.getServerSecurityLevel(server) > securityThresh) {
         for (let t of type) {
             if (t === "hack" || t === "weaken2") continue;
