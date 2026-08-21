@@ -24,17 +24,14 @@ export async function main(ns) {
 
     //open ports if any are closed
     ns.print(d + "OPENING PORTS" + d);
-    if (closed.length > 0) {
-        continue;
-    } else {
-        for (const key of closed) {
-            if (ns.fileExists(exelist[key], "home")) {
-                ns.print(d + key.toUpperCase() + d);
-                portfunction[key](server);
-                ns.print(d + "PORT OPENED" + d);
-            } else {
-                ns.print("===> PORT OPEN SKIPPING" + portopen[key] + ".......");
-            }
+
+    for (const key of closed) {
+        if (ns.fileExists(exelist[key], "home")) {
+            ns.print(d + key.toUpperCase() + d);
+            portfunction[key](server);
+            ns.print(d + "PORT OPENED" + d);
+        } else {
+            ns.print("===> PORT OPEN SKIPPING" + portopen[key] + ".......");
         }
     }
 

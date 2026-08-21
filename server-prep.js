@@ -2,8 +2,6 @@
 const d = "--------------";
 export async function main(ns)  {
 
-
-
     try {
         ns.print(d + "WEAKENING" + d);
         await runAndWait(script.weaken, weakthreads, server);

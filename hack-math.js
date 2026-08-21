@@ -24,6 +24,7 @@ export async function main(ns) {
     return { hackthreads, hackedmoney, growthreads, weakthreads };
 }
   
-//Security increase per hack thread__: 0.002
-//Security increase per grow thread__: 0.004
-//Security decrease per weaken thread: 0.05
+// Security increase per hack thread__: 0.002
+// Security increase per grow thread__: 0.004
+// Security decrease per weaken thread: 0.05
+// 1 weaken = 4 hacks and 1 grow = 3.2 hacks
